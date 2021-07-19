@@ -1,11 +1,26 @@
+<?php
+/*
+    Naprawić to gówno
+*/
+print_r($_SERVER['ORIG_PATH_INFO']);
+if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
+    $url = explode('/', $_SERVER['QUERY_STRING']);
+
+    require_once('redirect.php');
+    redirectToUrl(implode($url));
+}
+?>
+
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Short your link</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery-validate.js"></script>
 </head>
+
 <body>
     <div class="container">
         <form method="POST" action="short.php" name="short_link">
@@ -13,7 +28,11 @@
             <input type="text" name="link" id="link">
             <button type="submit">Skróć</button>
         </form>
-        <p id="output"></p>
+        <?php
+            if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
+                echo "<p id='output' href='" . $_SERVER['REQUEST_SCHEME'] . $_SERVER['SERVER_NAME'] . str_replace("index?", "", $_SERVER['REQUEST_URI']) . "'>". $_SERVER['REQUEST_SCHEME'] . $_SERVER['SERVER_NAME'] . str_replace("index?", "", $_SERVER['REQUEST_URI']) . "</p>";
+            }
+        ?>
     </div>
     <script>
         $(document).ready(function() {
@@ -39,4 +58,5 @@
         });
     </script>
 </body>
+
 </html>
