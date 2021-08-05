@@ -1,4 +1,7 @@
 <?php
+/*
+    Not needed now
+*/
 include('db.php');
 
 function redirectToUrl($short)
