@@ -1,10 +1,8 @@
 <?php
 include('db.php');
 
-if (isset($_POST['link']) && !empty($_POST['link'])) {
-    $link = $_POST['link'];
-    ShortLink($link);
-}
+$link = (isset($_POST['data']) && !empty($_POST['data'])) ? $_POST['data'] : '';
+$loop = 1;
 
 function generateRandomString($length = 10)
 {
@@ -17,21 +15,17 @@ function generateRandomString($length = 10)
     return $randomString;
 }
 
-function ShortLink($link)
-{
-    global $db;
+while($loop == 1){
     $link_exist = $db->query("SELECT link FROM links WHERE link='$link'");
     if (!empty($link_exist->fetch_assoc())) {
         $temp = $db->query("SELECT * FROM links WHERE link='$link'");
-        while ($row = $temp->fetch_assoc()) {
-            header("Location: index?" . $row['short']);
-        }
+        $result = $temp->fetch_assoc();
+        echo json_encode($result);
+        $loop = 0;
     } else {
         $short = generateRandomString();
         $short_exist = $db->query("SELECT short FROM links WHERE short='$short'");
-        if (!empty($short_exist->fetch_assoc())) {
-            ShortLink($link);
-        } else {
+        if (empty($short_exist->fetch_assoc())) {
             $db->query("INSERT INTO links (link, short) VALUES ('$link', '$short')");
         }
     }

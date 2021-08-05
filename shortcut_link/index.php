@@ -1,13 +1,17 @@
 <?php
-/*
-    Naprawić to gówno
-*/
-print_r($_SERVER['ORIG_PATH_INFO']);
-if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
-    $url = explode('/', $_SERVER['QUERY_STRING']);
+include('db.php');
+$local = $_SERVER['HTTP_REFERER'];
+$url = (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) ? $_SERVER['QUERY_STRING'] : '';
+if ($url !== ''){
+    $url_explode = explode('/', $url);
 
-    require_once('redirect.php');
-    redirectToUrl(implode($url));
+    $short_exist = $db->query("SELECT link FROM links WHERE short='$url_explode[0]'");
+        while ($row = $short_exist->fetch_assoc()) {
+            if (!empty($row['link'])) {
+                header('Location: ' . $row['link']);
+                die();
+            }
+        }
 }
 ?>
 
@@ -23,16 +27,12 @@ if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
 
 <body>
     <div class="container">
-        <form method="POST" action="short.php" name="short_link">
-            <label for="link">Wprowadź link do skrócenia</label>
-            <input type="text" name="link" id="link">
+        <form method="POST" name="short_link">
+            <label for="url">Wprowadź link do skrócenia</label>
+            <input type="text" name="url" id="url">
             <button type="submit">Skróć</button>
         </form>
-        <?php
-            if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
-                echo "<p id='output' href='" . $_SERVER['REQUEST_SCHEME'] . $_SERVER['SERVER_NAME'] . str_replace("index?", "", $_SERVER['REQUEST_URI']) . "'>". $_SERVER['REQUEST_SCHEME'] . $_SERVER['SERVER_NAME'] . str_replace("index?", "", $_SERVER['REQUEST_URI']) . "</p>";
-            }
-        ?>
+        <a id="output"></a>
     </div>
     <script>
         $(document).ready(function() {
@@ -43,16 +43,21 @@ if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
 
             $("form[name='short_link']").validate({
                 rules: {
-                    link: {
+                    url: {
                         required: true,
                         validUrl: true
                     }
                 },
                 messages: {
-                    link: 'Please enter a valid URL'
+                    url: 'Please enter a valid URL'
                 },
                 submitHandler: function(form) {
-                    form.submit();
+                    console.log(form['url'].value);
+                    $.post('short.php', {data: form['url'].value}, function(result) {
+                        console.log(result);
+                        $('#output').attr('href','<?php echo $local;?>'+result['short']);
+                        $('#output').append('<?php echo $local;?>'+result['short']);
+                    }, 'json');
                 }
             });
         });
